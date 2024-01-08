@@ -17,6 +17,11 @@ libs = ['lib']
 fuzz_runs = 2000
 optimizer_runs = 10_000
 gas_limit = 30_000_000
+# Settings required to use Sphinx:
+build_info = true
+extra_output = ['storageLayout']
+fs_permissions = [{access="read", path="./out"}, {access="read-write", path="./cache"}]
+always_use_create_2_factory = true
 
 [profile.optimized]
 via_ir = true
@@ -27,5 +32,5 @@ fuzz_runs = 2000
 src ='solidity/interfaces' # root_path variable in build-docs.sh
 
 [rpc_endpoints]
-mainnet = "${MAINNET_RPC}"
-goerli = "${GOERLI_RPC}"
+ethereum = "${MAINNET_RPC}"
+sepolia = "${SEPOLIA_RPC}"

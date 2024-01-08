@@ -2,6 +2,7 @@
 pragma solidity 0.8.19;
 
 import {Script} from 'forge-std/Script.sol';
+import {Sphinx, Network} from '@sphinx-labs/contracts/SphinxPlugin.sol';
 
 import {AutomationVaultFactory, IAutomationVaultFactory} from '@contracts/AutomationVaultFactory.sol';
 import {AutomationVault, IAutomationVault} from '@contracts/AutomationVault.sol';
@@ -12,11 +13,7 @@ import {Keep3rBondedRelay, IKeep3rBondedRelay} from '@contracts/Keep3rBondedRela
 import {XKeeperMetadata, IXKeeperMetadata} from '@contracts/XKeeperMetadata.sol';
 import {_ETH} from '@utils/Constants.sol';
 
-abstract contract DeployNativeETH is Script {
-  // Deployer EOA
-  address public deployer;
-  uint256 internal _deployerPk;
-
+abstract contract DeployNativeETH is Script, Sphinx {
   // AutomationVault contracts
   IAutomationVaultFactory public automationVaultFactory;
   IAutomationVault public automationVault;
@@ -33,10 +30,16 @@ abstract contract DeployNativeETH is Script {
   // AutomationVault params
   address public owner;
 
-  function run() public {
-    deployer = vm.rememberKey(_deployerPk);
-    vm.startBroadcast(deployer);
+  function setUp() public virtual {
+    sphinxConfig.owners = [address(0)]; // Add owner address(es)
+    sphinxConfig.orgId = ''; // Add org ID
+    sphinxConfig.mainnets = [Network.ethereum];
+    sphinxConfig.testnets = [Network.sepolia];
+    sphinxConfig.projectName = 'Keep3r_Framework';
+    sphinxConfig.threshold = 1;
+  }
 
+  function run() public sphinx {
     automationVaultFactory = new AutomationVaultFactory();
     automationVault = automationVaultFactory.deployAutomationVault(owner, _ETH, 0);
 
@@ -46,25 +49,21 @@ abstract contract DeployNativeETH is Script {
     keep3rBondedRelay = new Keep3rBondedRelay();
 
     xKeeperMetadata = new XKeeperMetadata();
-
-    vm.stopBroadcast();
   }
 }
 
 contract DeployMainnet is DeployNativeETH {
-  function setUp() public {
-    // Deployer setup
-    _deployerPk = vm.envUint('MAINNET_DEPLOYER_PK');
+  function setUp() public override {
+    DeployNativeETH.setUp();
 
     // AutomationVault setup
     owner = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
   }
 }
 
-contract DeployGoerli is DeployNativeETH {
-  function setUp() public {
-    // Deployer setup
-    _deployerPk = vm.envUint('GOERLI_DEPLOYER_PK');
+contract DeploySepolia is DeployNativeETH {
+  function setUp() public override {
+    DeployNativeETH.setUp();
 
     // AutomationVault setup
     owner = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;

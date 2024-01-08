@@ -9,12 +9,11 @@ import {DeployNativeETH} from '@script/DeployNativeETH.s.sol';
 contract DeployForTest is DeployNativeETH {
   uint256 private constant _FORK_BLOCK = 18_500_000;
 
-  function setUp() public virtual {
-    // Mainnet fork
-    vm.createSelectFork('mainnet', _FORK_BLOCK);
+  function setUp() public virtual override {
+    DeployNativeETH.setUp();
 
-    // Deployer setup
-    _deployerPk = vm.deriveKey('test test test test test test test test test test test junk', 0);
+    // Mainnet fork
+    vm.createSelectFork('ethereum', _FORK_BLOCK);
 
     // AutomationVault setup
     owner = makeAddr('Owner');
